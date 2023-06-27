@@ -1,15 +1,19 @@
 import psycopg2
 from faker import Faker
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Crear instancia de Faker
 fake = Faker()
 
 # Conexión a la base de datos
 conn = psycopg2.connect(
-    host="localhost",
-    database="proyecto",
-    user="postgres",
-    password=""
+    host=os.getenv("HOST"),
+    database=os.getenv("DATABASE"),
+    user=os.getenv("USER"),
+    password=os.getenv("PASSWORD")
 )
 cursor = conn.cursor()
 

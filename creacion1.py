@@ -1,15 +1,19 @@
 import psycopg2
 from faker import Faker
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Crear instancia de Faker
 fake = Faker()
 
 # Conexión a la base de datos
 conn = psycopg2.connect(
-    host="localhost",
-    database="proyecto",
-    user="postgres",
-    password=""
+    host=os.getenv("HOST"),
+    database=os.getenv("DATABASE"),
+    user=os.getenv("USER"),
+    password=os.getenv("PASSWORD")
 )
 cursor = conn.cursor()
 
@@ -36,23 +40,21 @@ for _ in range(num_registros):
 cursor.execute('SELECT * FROM Personas')
 personas = cursor.fetchall()
 # Tabla Empleados
-for _ in range(num_registros//2):
-    [tipo_documento, numero_documento, nombre,
-        apellido, sexo, correo] = personas[_]
+for _ in range(num_registros):
+    [tipo_documento, numero_documento] = personas[_]
     sueldo = fake.random_int(min=2000, max=10000)
     fecha_inicio = fake.date_time_between(start_date="-5y", end_date="now")
     tiempo_parcial = fake.random_element(elements=(True, False))
 
     cursor.execute(
-        "INSERT INTO Empleados (numero_documento, tipo_documento, nombre, apellido, sexo, correo, sueldo, fecha_inicio, tiempo_parcial) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO Empleados (numero_documento, tipo_documento, sueldo, fecha_inicio, tiempo_parcial) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (numero_documento, tipo_documento, nombre, apellido,
          sexo, correo, sueldo, fecha_inicio, tiempo_parcial)
     )
 
 # Tabla Abogados
-for _ in range(num_registros//3):
-    [tipo_documento, numero_documento, nombre,
-        apellido, sexo, correo] = personas[_]
+for _ in range(0, num_registros//2):
+    [tipo_documento, numero_documento] = personas[_]
     sueldo = fake.random_int(min=2000, max=10000)
     fecha_inicio = fake.date_time_between(start_date="-5y", end_date="now")
     tiempo_parcial = fake.random_element(elements=(True, False))
@@ -63,23 +65,25 @@ for _ in range(num_registros//3):
     casos_perdidos = fake.random_int(min=0, max=100)
 
     cursor.execute(
-        "INSERT INTO Abogados (numero_documento, tipo_documento, nombre, apellido, sexo, correo, sueldo, fecha_inicio, tiempo_parcial, especializacion, numero_colegiatura, casos_ganados, casos_perdidos) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO Abogados (numero_documento, tipo_documento, sueldo, fecha_inicio, tiempo_parcial, especializacion, numero_colegiatura, casos_ganados, casos_perdidos) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (numero_documento, tipo_documento, nombre, apellido, sexo, correo, sueldo, fecha_inicio,
          tiempo_parcial, especializacion, numero_colegiatura, casos_ganados, casos_perdidos)
     )
 
 
 # Tabla Secretarios
-for _ in range(num_registros//4):
+for _ in range(num_registros//2, num_registros//1):
     [tipo_documento, numero_documento, nombre,
         apellido, sexo, correo] = personas[_]
     formacion_tecnica = fake.random_element(elements=(True, False))
     tiempo_parcial = fake.random_element(elements=(True, False))
+    fecha_inicio = fake.date_time_between(start_date="-5y", end_date="now")
+    sueldo = fake.random_int(min=2000, max=10000)
 
     cursor.execute(
-        "INSERT INTO Secretarios (numero_documento, tipo_documento, nombre, apellido, sexo, correo, formacion_tecnica, tiempo_parcial) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO Secretarios (numero_documento, tipo_documento, nombre, apellido, sexo, correo, sueldo, fecha_inicio, formacion_tecnica, tiempo_parcial) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (numero_documento, tipo_documento, nombre, apellido,
-         sexo, correo, formacion_tecnica, tiempo_parcial)
+         sexo, correo, sueldo, fecha_inicio, formacion_tecnica, tiempo_parcial)
     )
 
 
@@ -87,7 +91,7 @@ for _ in range(num_registros//4):
 for _ in range(num_registros):
     codigo = fake.unique.random_number(digits=6)
     nombre = "Caso numero" + str(fake.unique.random_number(digits=6))
-    estado = fake.random_element(elements=("En proceso", "Finalizado"))
+    estado = fake.random_element(elements=('Registrado', 'EnProceso', 'Culminado'))
     fecha_inicio = fake.date_time_between(start_date="-5y", end_date="now")
     fecha_fin = fake.date_time_between(start_date=fecha_inicio, end_date="now")
     tipo_caso = fake.random_element(
@@ -98,6 +102,9 @@ for _ in range(num_registros):
         (codigo, nombre, estado, fecha_inicio, fecha_fin, tipo_caso)
     )
 
+
+
 # Guardar cambios y cerrar conexión
+
 conn.commit()
 conn.close()
