@@ -7,6 +7,17 @@ import concurrent.futures
 import multiprocessing
 import os
 
+
+def generate_persona():
+    tipo_documento = fake.random_element(elements=("DNI", "Pasaporte"))
+    numero_documento = fake.unique.random_number(digits=8)
+    nombre = fake.first_name()
+    apellido = fake.last_name()
+    sexo = fake.random_element(elements=("M", "F"))
+    correo = fake.email()
+
+    return (tipo_documento, numero_documento, nombre, apellido, sexo, correo)
+
 load_dotenv()
 # Crear instancia de Faker
 fake = Faker()
@@ -33,7 +44,7 @@ with open("CrearTablas.sql", "r") as file:
 
 class Firma:
     def __init__(self, n):
-        print(f"Intancia de {n} datos creada!")
+        print(f"Instancia de {n} datos creada!")
         self.n_personas = n
         self.n_empleados = (3*n)//4
         self.n_abogados = (3*self.n_empleados)//4
@@ -42,7 +53,9 @@ class Firma:
 
     def createData(self):
         try:
-            self.createPersonas()
+            self.executeInsert("INSERT INTO Persona (tipo_documento, numero_documento, nombre, apellido, sexo, correo) VALUES (%s, %s, %s, %s, %s, %s)",
+                               6, generate_persona, self.n_personas)
+            # self.createPersonas()
             # self.createEmpleados()
             # self.createAbogados()
             # self.createSecretarios()
@@ -54,66 +67,82 @@ class Firma:
 
         conn.close()
 
-    def createPersonas(self) -> None:
-        sql = "INSERT INTO Persona (tipo_documento, numero_documento, nombre, apellido, sexo, correo) VALUES (%s, %s, %s, %s, %s, %s)"
-        data: np.ndarray = np.empty(shape=(0, 6), dtype=str)
+    def executeInsert(self, sql, num_of_attributes, generate, num_of_tuples):
+        data: np.ndarray = np.empty(shape=(0, num_of_attributes), dtype=str)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=int(multiprocessing.cpu_count())) as executor:
+            # Get the number of threads used by the ThreadPoolExecutor
+            num_threads = executor._max_workers
 
-        def generate_persona():
-            tipo_documento = fake.random_element(elements=("DNI", "Pasaporte"))
-            numero_documento = fake.unique.random_number(digits=8)
-            nombre = fake.first_name()
-            apellido = fake.last_name()
-            sexo = fake.random_element(elements=("M", "F"))
-            correo = fake.email()
+            # Generate the data for personas in parallel
+            futures = [executor.submit(generate) for _ in range(num_of_tuples)]
 
-            return (tipo_documento, numero_documento, nombre, apellido, sexo, correo)
+            # Get the results of the futures
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                data = np.append(data, [result], axis=0)
+
+        cursor.executemany(sql, data)
+
+    # def createPersonas(self) -> None:
+    #     sql = "INSERT INTO Persona (tipo_documento, numero_documento, nombre, apellido, sexo, correo) VALUES (%s, %s, %s, %s, %s, %s)"
+    #     data: np.ndarray = np.empty(shape=(0, 6), dtype=str)
+    #
+    #     def generate():
+    #         tipo_documento = fake.random_element(elements=("DNI", "Pasaporte"))
+    #         numero_documento = fake.unique.random_number(digits=8)
+    #         nombre = fake.first_name()
+    #         apellido = fake.last_name()
+    #         sexo = fake.random_element(elements=("M", "F"))
+    #         correo = fake.email()
+    #
+    #         return (tipo_documento, numero_documento, nombre, apellido, sexo, correo)
+    #
+    #     num_cores = multiprocessing.cpu_count()
+    #     num_threads = int(num_cores)
+    #
+    #     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+    #         # Get the number of threads used by the ThreadPoolExecutor
+    #         num_threads = executor._max_workers
+    #
+    #         # Generate the data for personas in parallel
+    #         futures = [executor.submit(generate) for _ in range(self.n_personas)]
+    #
+    #         # Get the results of the futures
+    #         for future in concurrent.futures.as_completed(futures):
+    #             result = future.result()
+    #             data = np.append(data, [result], axis=0)
+    #
+    #     cursor.executemany(sql, data)
+
+
+    def createEmpleados(self) -> None:
+        sql = "INSERT INTO Empleado (numero_documento, tipo_documento, sueldo, fecha_inicio, tiempo_parcial) VALUES (%s, %s, %s, %s, %s)"
+        data: np.ndarray = np.empty(shape=(0, 5), dtype=str)
+        index = [0]
+        def generate(index):
+            [tipo_documento, numero_documento] = self.personas[index[0]]
+            index[0] += 1
+            sueldo = fake.random_int(min=2000, max=10000)
+            fecha_inicio = fake.date_time_between(start_date="-5y", end_date="now")
+            tiempo_parcial = fake.random_element(elements=(True, False))
+
+            return (tipo_documento, numero_documento, sueldo, fecha_inicio, tiempo_parcial)
 
         num_cores = multiprocessing.cpu_count()
-        num_threads = int(num_cores * 0.9)
+        num_threads = int(num_cores)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
             # Get the number of threads used by the ThreadPoolExecutor
             num_threads = executor._max_workers
 
             # Generate the data for personas in parallel
-            futures = [executor.submit(generate_persona) for _ in range(self.n_personas)]
+            futures = [executor.submit(generate, index) for _ in range(self.n_personas)]
 
             # Get the results of the futures
             for future in concurrent.futures.as_completed(futures):
                 data = np.append(data, [future.result()], axis=0)
 
         cursor.executemany(sql, data)
-
-
-    # def createPersonas(self) -> None:
-    #     sql: str = "INSERT INTO Persona (tipo_documento, numero_documento, nombre, apellido, sexo, correo) VALUES (%s,%s,%s,%s,%s,%s)"
-    #     data: np.ndarray = np.empty(shape=(0, 6), dtype=str)
-    #     for _ in range(self.n_personas):
-    #         tipo_documento = fake.random_element(
-    #             elements=("DNI", "Pasaporte"))
-    #         numero_documento = fake.unique.random_number(digits=8)
-    #         nombre = fake.first_name()
-    #         apellido = fake.last_name()
-    #         sexo = fake.random_element(elements=("M", "F"))
-    #         correo = fake.email()
-    #         # Insert into personas array to take the reference
-    #         self.personas = np.append(self.personas, [(tipo_documento, numero_documento)], axis=0)
-    #
-    #         # Insert into temporal array to insert the data
-    #         data = np.append(data, [(tipo_documento, numero_documento,nombre,apellido,sexo,correo)], axis=0)
-    #
-    #     cursor.executemany(sql, data)
-
-    def createEmpleados(self) -> None:
-        for _ in range(0, self.n_empleados):
-            [tipo_documento, numero_documento] = self.personas[_]
-            sueldo = fake.random_int(min=2000, max=10000)
-            fecha_inicio = fake.date_time_between(start_date="-5y", end_date="now")
-            tiempo_parcial = fake.random_element(elements=(True, False))
-            cursor.execute(
-                "INSERT INTO Empleado (numero_documento, tipo_documento, sueldo, fecha_inicio, tiempo_parcial) VALUES (%s, %s, %s, %s, %s)",
-                (numero_documento, tipo_documento, sueldo, fecha_inicio, tiempo_parcial)
-            )
 
 
     def createAbogados(self) -> None:
