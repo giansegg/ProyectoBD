@@ -33,7 +33,7 @@ with open("CrearTablas.sql", "r") as file:
 
 class Firma:
     def __init__(self, n):
-        print(f"Intancia de {n} datos creada!")
+        print(f"Instancia de {n} datos creada!")
         self.n_personas = n
         self.n_empleados = (3*n)//4
         self.n_abogados = (3*self.n_empleados)//4
