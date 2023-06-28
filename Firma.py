@@ -40,7 +40,6 @@ class Firma:
         self.personas = np.empty(shape=(0, 2), dtype=str)
 
     def createData(self):
-
         try:
             self.executeInsert(
                 "INSERT INTO Persona (tipo_documento, numero_documento, nombre, apellido, sexo, correo) VALUES (%s, %s, %s, %s, %s, %s)",
