@@ -43,11 +43,11 @@ class Firma:
         try:
             self.executeInsert(
                 "INSERT INTO Persona (tipo_documento, numero_documento, nombre, apellido, sexo, correo) VALUES (%s, %s, %s, %s, %s, %s)",
-                6, self.generate_persona, self.n_personas)
+                6, self.generate_persona, self.n_personas, True)
 
             self.executeInsert(
                 "INSERT INTO Empleado (numero_documento, tipo_documento, sueldo, fecha_inicio, tiempo_parcial) VALUES (%s, %s, %s, %s, %s)",
-                5, self.generate_empleado, self.n_empleados)
+                5, self.generate_empleado, self.n_empleados, False)
 
             print("Datos insertados correctamente")
         except Exception as e:
@@ -57,7 +57,7 @@ class Firma:
 
         conn.close()
 
-    def executeInsert(self, sql: str, num_of_attributes: int, generate, num_of_tuples: int):
+    def executeInsert(self, sql: str, num_of_attributes: int, generate, num_of_tuples: int, flag: bool):
         data: np.ndarray = np.empty(shape=(0, num_of_attributes), dtype=str)
         with concurrent.futures.ThreadPoolExecutor(max_workers=int(multiprocessing.cpu_count())) as executor:
             # Get the number of threads used by the ThreadPoolExecutor
@@ -85,12 +85,20 @@ class Firma:
         apellido = fake.last_name()
         sexo = fake.random_element(elements=("M", "F"))
         correo = fake.email()
-        self.personas = np.append(self.personas, [(tipo_documento, numero_documento)], axis=0)
         return (tipo_documento, numero_documento, nombre, apellido, sexo, correo)
 
     def generate_empleado(self, index):
-        print(self.personas[0])
-        [tipo_documento, numero_documento] = self.personas[index[0]]
+        persona = None
+        tipo_documento = None
+        numero_documento = None
+        while persona is None:
+            try:
+                cursor.execute("SELECT tipo_documento, numero_documento FROM Persona ORDER BY random() LIMIT 1")
+                persona = cursor.fetchone()
+            except:
+                pass
+
+        [tipo_documento, numero_documento] = persona
         index[0] += 1
         sueldo = fake.random_int(min=2000, max=10000)
         fecha_inicio = fake.date_time_between(start_date="-5y", end_date="now")

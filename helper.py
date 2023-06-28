@@ -1,6 +1,7 @@
-
+def create_tables(squema):
+    return f"""
 -- Tabla Personas
-CREATE TABLE IF NOT EXISTS Persona (
+CREATE TABLE IF NOT EXISTS {squema}.Persona (
   tipo_documento VARCHAR(15) CHECK ( tipo_documento IN ('Pasaporte', 'DNI') ),
   numero_documento VARCHAR(20),
   nombre VARCHAR(50) NOT NULL,
@@ -11,27 +12,27 @@ CREATE TABLE IF NOT EXISTS Persona (
 );
 
 -- Tabla Telefonos
-CREATE TABLE IF NOT EXISTS Telefono (
+CREATE TABLE IF NOT EXISTS {squema}.Telefono (
   numero VARCHAR(15),
   numero_documento VARCHAR(20),
   tipo_documento VARCHAR(15),
   PRIMARY KEY (numero),
-  FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento)
+  FOREIGN KEY (numero_documento, tipo_documento) REFERENCES {squema}.Persona(numero_documento, tipo_documento)
 );
 
 -- Tabla Empleados
-CREATE TABLE IF NOT EXISTS Empleado (
+CREATE TABLE IF NOT EXISTS {squema}.Empleado (
   numero_documento VARCHAR(20),
   tipo_documento VARCHAR(15),
   sueldo INT NOT NULL CHECK(sueldo >= 0),
   fecha_inicio TIMESTAMP NOT NULL,
   tiempo_parcial BOOLEAN NOT NULL,
     PRIMARY KEY (numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento)
+    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES {squema}.Persona(numero_documento, tipo_documento)
 );
 
 -- Tabla Abogados
-CREATE TABLE IF NOT EXISTS Abogado (
+CREATE TABLE IF NOT EXISTS {squema}.Abogado (
   numero_documento VARCHAR(20),
   tipo_documento VARCHAR(15),
   especializacion VARCHAR(20) NOT NULL CHECK ( especializacion IN ('Civil', 'Penal', 'Laboral', 'Familiar', 'Mercantil') ),
@@ -39,30 +40,30 @@ CREATE TABLE IF NOT EXISTS Abogado (
   casos_ganados SMALLINT CHECK(casos_ganados >= 0),
   casos_perdidos SMALLINT CHECK(casos_perdidos >= 0),
     PRIMARY KEY (numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Empleado(numero_documento, tipo_documento)
+    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES {squema}.Empleado(numero_documento, tipo_documento)
 );
 
 -- Tabla Secretarios
-CREATE TABLE IF NOT EXISTS Secretario (
+CREATE TABLE IF NOT EXISTS {squema}.Secretario (
   numero_documento VARCHAR(20),
   tipo_documento VARCHAR(15),
   formacion_tecnica BOOLEAN NOT NULL,
     PRIMARY KEY (numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Empleado(numero_documento, tipo_documento)
+    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES {squema}.Empleado(numero_documento, tipo_documento)
 );
 
 -- Tabla Departamentos
-CREATE TABLE IF NOT EXISTS Departamento (
+CREATE TABLE IF NOT EXISTS {squema}.Departamento (
     nombre VARCHAR(20),
     numero_documento_abogado_responsable VARCHAR(20),
     tipo_documento_abogado_responsable VARCHAR(15),
     fecha_creacion TIMESTAMP NOT NULL,
     PRIMARY KEY (nombre),
-    FOREIGN KEY (numero_documento_abogado_responsable, tipo_documento_abogado_responsable) REFERENCES Abogado(numero_documento, tipo_documento)
+    FOREIGN KEY (numero_documento_abogado_responsable, tipo_documento_abogado_responsable) REFERENCES {squema}.Abogado(numero_documento, tipo_documento)
 );
 
 -- Tabla Casos
-CREATE TABLE IF NOT EXISTS Caso (
+CREATE TABLE IF NOT EXISTS {squema}.Caso (
   codigo VARCHAR(20),
   nombre VARCHAR(30) NOT NULL,
   estado VARCHAR(10) NOT NULL CHECK(estado IN ('Registrado', 'EnProceso', 'Culminado')),
@@ -74,70 +75,70 @@ CREATE TABLE IF NOT EXISTS Caso (
 
 
 -- Tabla AbogadoTrabaja
-CREATE TABLE IF NOT EXISTS AbogadoTrabaja (
+CREATE TABLE IF NOT EXISTS {squema}.AbogadoTrabaja (
   numero_documento_abogado VARCHAR(20),
   tipo_documento_abogado VARCHAR(15),
   nombre_departamento VARCHAR(20),
     PRIMARY KEY (numero_documento_abogado, tipo_documento_abogado, nombre_departamento),
-    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES Abogado(numero_documento, tipo_documento),
-    FOREIGN KEY (nombre_departamento) REFERENCES Departamento(nombre)
+    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES {squema}.Abogado(numero_documento, tipo_documento),
+    FOREIGN KEY (nombre_departamento) REFERENCES {squema}.Departamento(nombre)
 );
 
 
 -- Tabla SecretarioAsiste
-CREATE TABLE IF NOT EXISTS SecretarioAsiste (
+CREATE TABLE IF NOT EXISTS {squema}.SecretarioAsiste (
     numero_documento_abogado VARCHAR(20),
     tipo_documento_abogado VARCHAR(15),
     numero_documento_secretario VARCHAR(20),
     tipo_documento_secretario VARCHAR(15),
     PRIMARY KEY (numero_documento_abogado, tipo_documento_abogado),
-    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES Abogado(numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento_secretario, tipo_documento_secretario) REFERENCES Secretario(numero_documento, tipo_documento)
+    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES {squema}.Abogado(numero_documento, tipo_documento),
+    FOREIGN KEY (numero_documento_secretario, tipo_documento_secretario) REFERENCES {squema}.Secretario(numero_documento, tipo_documento)
 );
 
 -- Tabla PersonaJuridica
-CREATE TABLE IF NOT EXISTS PersonaJuridica (
+CREATE TABLE IF NOT EXISTS {squema}.PersonaJuridica (
   razon_social VARCHAR(50) NOT NULL,
   ruc VARCHAR(20),
   PRIMARY KEY (ruc)
 );
 
 -- Tabla PersonaParticipa
-CREATE TABLE IF NOT EXISTS PersonaParticipa (
+CREATE TABLE IF NOT EXISTS {squema}.PersonaParticipa (
   numero_documento VARCHAR(20),
   tipo_documento VARCHAR(15),
   caso_codigo VARCHAR(20),
   tipo VARCHAR(10) NOT NULL CHECK(tipo IN ('testigo', 'demandado', 'demandante')),
     PRIMARY KEY (numero_documento, tipo_documento, caso_codigo),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento),
-    FOREIGN KEY (caso_codigo) REFERENCES Caso(codigo)
+    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES {squema}.Persona(numero_documento, tipo_documento),
+    FOREIGN KEY (caso_codigo) REFERENCES {squema}.Caso(codigo)
 );
 
 -- Tabla PersonaRepresenta
-CREATE TABLE IF NOT EXISTS PersonaRepresenta (
+CREATE TABLE IF NOT EXISTS {squema}.PersonaRepresenta (
   numero_documento VARCHAR(20),
   tipo_documento VARCHAR(15),
   ruc VARCHAR(20),
   caso_codigo VARCHAR(20),
     PRIMARY KEY (numero_documento, tipo_documento, ruc, caso_codigo),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento),
-    FOREIGN KEY (ruc) REFERENCES PersonaJuridica(ruc),
-    FOREIGN KEY (caso_codigo) REFERENCES Caso(codigo)
+    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES {squema}.Persona(numero_documento, tipo_documento),
+    FOREIGN KEY (ruc) REFERENCES {squema}.PersonaJuridica(ruc),
+    FOREIGN KEY (caso_codigo) REFERENCES {squema}.Caso(codigo)
 );
 
 
 -- Tabla AbogadoParticipa
-CREATE TABLE IF NOT EXISTS AbogadoParticipa (
+CREATE TABLE IF NOT EXISTS {squema}.AbogadoParticipa (
   numero_documento_abogado VARCHAR(20),
   tipo_documento_abogado VARCHAR(15),
   caso_codigo VARCHAR(20),
     PRIMARY KEY (numero_documento_abogado, tipo_documento_abogado, caso_codigo),
-    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES Abogado(numero_documento, tipo_documento),
-    FOREIGN KEY (caso_codigo) REFERENCES Caso(codigo)
+    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES {squema}.Abogado(numero_documento, tipo_documento),
+    FOREIGN KEY (caso_codigo) REFERENCES {squema}.Caso(codigo)
 );
 
 -- Tabla Documentos
-CREATE TABLE IF NOT EXISTS Documento (
+CREATE TABLE IF NOT EXISTS {squema}.Documento (
   id uuid DEFAULT gen_random_uuid(),
   enlace VARCHAR(100) NOT NULL,
   fecha TIMESTAMP NOT NULL,
@@ -145,5 +146,51 @@ CREATE TABLE IF NOT EXISTS Documento (
   procedencia VARCHAR(20) NOT NULL CHECK ( procedencia IN ('Cliente', 'Contraparte', 'Tribunal') ),
   codigo_caso VARCHAR(20),
   PRIMARY KEY (id),
-  FOREIGN KEY (codigo_caso) REFERENCES Caso(codigo)
+  FOREIGN KEY (codigo_caso) REFERENCES {squema}.Caso(codigo)
 );
+"""
+
+def drop_tables(squema):
+    return f"""
+    -- Tabla Documentos
+DROP TABLE IF EXISTS {squema}.Documento;
+
+-- Tabla AbogadoParticipa
+DROP TABLE IF EXISTS {squema}.AbogadoParticipa;
+
+-- Tabla PersonaRepresenta
+DROP TABLE IF EXISTS {squema}.PersonaRepresenta;
+
+-- Tabla PersonaParticipa
+DROP TABLE IF EXISTS {squema}.PersonaParticipa;
+
+-- Tabla PersonaJuridica
+DROP TABLE IF EXISTS {squema}.PersonaJuridica;
+
+-- Tabla SecretarioAsiste
+DROP TABLE IF EXISTS {squema}.SecretarioAsiste;
+
+-- Tabla AbogadoTrabaja
+DROP TABLE IF EXISTS {squema}.AbogadoTrabaja;
+
+-- Tabla Casos
+DROP TABLE IF EXISTS {squema}.Caso;
+
+-- Tabla Departamentos
+DROP TABLE IF EXISTS {squema}.Departamento;
+
+-- Tabla Secretario
+DROP TABLE IF EXISTS {squema}.Secretario;
+
+-- Tabla Abogado
+DROP TABLE IF EXISTS {squema}.Abogado;
+
+-- Tabla Empleados
+DROP TABLE IF EXISTS {squema}.Empleado;
+
+-- Tabla Telefonos
+DROP TABLE IF EXISTS {squema}.Telefono;
+
+-- Tabla Persona
+DROP TABLE IF EXISTS {squema}.Persona;
+"""
