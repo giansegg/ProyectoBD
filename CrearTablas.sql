@@ -7,58 +7,55 @@ CREATE TABLE IF NOT EXISTS Persona (
   apellido VARCHAR(70) NOT NULL,
   sexo VARCHAR(1) NOT NULL CHECK(sexo IN ('F', 'M', 'O')),
   correo VARCHAR(70) NOT NULL CHECK(correo LIKE '%__@__%.__%'),
-  PRIMARY KEY (tipo_documento, numero_documento)
+  PRIMARY KEY (numero_documento)
 );
 
 -- Tabla Telefonos
 CREATE TABLE IF NOT EXISTS Telefono (
   numero VARCHAR(15),
   numero_documento VARCHAR(20),
-  tipo_documento VARCHAR(15),
   PRIMARY KEY (numero),
-  FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento)
+  FOREIGN KEY (numero_documento) REFERENCES Persona(numero_documento)
 );
 
 -- Tabla Empleados
 CREATE TABLE IF NOT EXISTS Empleado (
   numero_documento VARCHAR(20),
-  tipo_documento VARCHAR(15),
   sueldo INT NOT NULL CHECK(sueldo >= 0),
   fecha_inicio TIMESTAMP NOT NULL,
   tiempo_parcial BOOLEAN NOT NULL,
-    PRIMARY KEY (numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento)
+    PRIMARY KEY (numero_documento),
+    FOREIGN KEY (numero_documento) REFERENCES Persona(numero_documento)
 );
 
 -- Tabla Abogados
 CREATE TABLE IF NOT EXISTS Abogado (
   numero_documento VARCHAR(20),
-  tipo_documento VARCHAR(15),
   especializacion VARCHAR(20) NOT NULL CHECK ( especializacion IN ('Civil', 'Penal', 'Laboral', 'Familiar', 'Mercantil') ),
   numero_colegiatura VARCHAR(20) NOT NULL,
   casos_ganados SMALLINT CHECK(casos_ganados >= 0),
   casos_perdidos SMALLINT CHECK(casos_perdidos >= 0),
-    PRIMARY KEY (numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Empleado(numero_documento, tipo_documento)
+    PRIMARY KEY (numero_documento),
+    FOREIGN KEY (numero_documento) REFERENCES Empleado(numero_documento)
 );
+
+select * from abogado join secretario s on Abogado.numero_documento = s.numero_documento;
 
 -- Tabla Secretarios
 CREATE TABLE IF NOT EXISTS Secretario (
   numero_documento VARCHAR(20),
-  tipo_documento VARCHAR(15),
   formacion_tecnica BOOLEAN NOT NULL,
-    PRIMARY KEY (numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Empleado(numero_documento, tipo_documento)
+    PRIMARY KEY (numero_documento),
+    FOREIGN KEY (numero_documento) REFERENCES Empleado(numero_documento)
 );
 
 -- Tabla Departamentos
 CREATE TABLE IF NOT EXISTS Departamento (
     nombre VARCHAR(20),
     numero_documento_abogado_responsable VARCHAR(20),
-    tipo_documento_abogado_responsable VARCHAR(15),
     fecha_creacion TIMESTAMP NOT NULL,
     PRIMARY KEY (nombre),
-    FOREIGN KEY (numero_documento_abogado_responsable, tipo_documento_abogado_responsable) REFERENCES Abogado(numero_documento, tipo_documento)
+    FOREIGN KEY (numero_documento_abogado_responsable) REFERENCES Abogado(numero_documento)
 );
 
 -- Tabla Casos
@@ -76,10 +73,9 @@ CREATE TABLE IF NOT EXISTS Caso (
 -- Tabla AbogadoTrabaja
 CREATE TABLE IF NOT EXISTS AbogadoTrabaja (
   numero_documento_abogado VARCHAR(20),
-  tipo_documento_abogado VARCHAR(15),
   nombre_departamento VARCHAR(20),
-    PRIMARY KEY (numero_documento_abogado, tipo_documento_abogado, nombre_departamento),
-    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES Abogado(numero_documento, tipo_documento),
+    PRIMARY KEY (numero_documento_abogado, nombre_departamento),
+    FOREIGN KEY (numero_documento_abogado) REFERENCES Abogado(numero_documento),
     FOREIGN KEY (nombre_departamento) REFERENCES Departamento(nombre)
 );
 
@@ -87,12 +83,12 @@ CREATE TABLE IF NOT EXISTS AbogadoTrabaja (
 -- Tabla SecretarioAsiste
 CREATE TABLE IF NOT EXISTS SecretarioAsiste (
     numero_documento_abogado VARCHAR(20),
-    tipo_documento_abogado VARCHAR(15),
+
     numero_documento_secretario VARCHAR(20),
-    tipo_documento_secretario VARCHAR(15),
-    PRIMARY KEY (numero_documento_abogado, tipo_documento_abogado),
-    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES Abogado(numero_documento, tipo_documento),
-    FOREIGN KEY (numero_documento_secretario, tipo_documento_secretario) REFERENCES Secretario(numero_documento, tipo_documento)
+
+    PRIMARY KEY (numero_documento_abogado),
+    FOREIGN KEY (numero_documento_abogado) REFERENCES Abogado(numero_documento),
+    FOREIGN KEY (numero_documento_secretario) REFERENCES Secretario(numero_documento)
 );
 
 -- Tabla PersonaJuridica
@@ -105,22 +101,20 @@ CREATE TABLE IF NOT EXISTS PersonaJuridica (
 -- Tabla PersonaParticipa
 CREATE TABLE IF NOT EXISTS PersonaParticipa (
   numero_documento VARCHAR(20),
-  tipo_documento VARCHAR(15),
   caso_codigo VARCHAR(20),
   tipo VARCHAR(10) NOT NULL CHECK(tipo IN ('testigo', 'demandado', 'demandante')),
-    PRIMARY KEY (numero_documento, tipo_documento, caso_codigo),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento),
+    PRIMARY KEY (numero_documento, caso_codigo),
+    FOREIGN KEY (numero_documento) REFERENCES Persona(numero_documento),
     FOREIGN KEY (caso_codigo) REFERENCES Caso(codigo)
 );
 
 -- Tabla PersonaRepresenta
 CREATE TABLE IF NOT EXISTS PersonaRepresenta (
   numero_documento VARCHAR(20),
-  tipo_documento VARCHAR(15),
   ruc VARCHAR(20),
   caso_codigo VARCHAR(20),
-    PRIMARY KEY (numero_documento, tipo_documento, ruc, caso_codigo),
-    FOREIGN KEY (numero_documento, tipo_documento) REFERENCES Persona(numero_documento, tipo_documento),
+    PRIMARY KEY (numero_documento, ruc, caso_codigo),
+    FOREIGN KEY (numero_documento) REFERENCES Persona(numero_documento),
     FOREIGN KEY (ruc) REFERENCES PersonaJuridica(ruc),
     FOREIGN KEY (caso_codigo) REFERENCES Caso(codigo)
 );
@@ -129,10 +123,9 @@ CREATE TABLE IF NOT EXISTS PersonaRepresenta (
 -- Tabla AbogadoParticipa
 CREATE TABLE IF NOT EXISTS AbogadoParticipa (
   numero_documento_abogado VARCHAR(20),
-  tipo_documento_abogado VARCHAR(15),
   caso_codigo VARCHAR(20),
-    PRIMARY KEY (numero_documento_abogado, tipo_documento_abogado, caso_codigo),
-    FOREIGN KEY (numero_documento_abogado, tipo_documento_abogado) REFERENCES Abogado(numero_documento, tipo_documento),
+    PRIMARY KEY (numero_documento_abogado, caso_codigo),
+    FOREIGN KEY (numero_documento_abogado) REFERENCES Abogado(numero_documento),
     FOREIGN KEY (caso_codigo) REFERENCES Caso(codigo)
 );
 
