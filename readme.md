@@ -1,7 +1,7 @@
-## Ejemplo de .env
-'''
+## Ejemplo del .env
+````html
 HOST=<host>
-DATABASE=<database name>
+DATABASE=<database_name>
 USER=<user>
 PASSWORD=<password>
-'''
+````
