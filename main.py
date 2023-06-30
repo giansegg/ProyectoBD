@@ -3,7 +3,7 @@ from faker import Faker
 from dotenv import load_dotenv
 import random
 import os
-from helper import create_tables, drop_tables
+from helpers import create_tables, drop_tables
 import time
 
 load_dotenv()
@@ -11,10 +11,10 @@ load_dotenv()
 fake = Faker()
 # Conexión a la base de datos
 conn = psycopg2.connect(
-    host="localhost",
-    database="proyecto",
-    user="postgres",
-    password="Goleador0107"
+    host=os.getenv("HOST"),
+    database=os.getenv("DATABASE"),
+    user=os.getenv("USER"),
+    password=os.getenv("PASSWORD")
 )
 cursor = conn.cursor()
 

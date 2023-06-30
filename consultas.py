@@ -1,21 +1,23 @@
 import psycopg2
 import statistics
-from helper import FunVacuum, create_indexes, drop_indexes
+from typing import List
+from helpers import FunVacuum, create_indexes, drop_indexes, create_latex_table
 import time
+from dotenv import load_dotenv
+import os
 
-
-# nos conectamos a la bd
-
+load_dotenv()
+# Crear instancia de Faker
 conn = psycopg2.connect(
-    host="localhost",
-    database="proyecto",
-    user="postgres",
-    password="Goleador0107",
-    options="-c search_path=mil"
+    host=os.getenv("HOST"),
+    database=os.getenv("DATABASE"),
+    user=os.getenv("USER"),
+    password=os.getenv("PASSWORD")
 )
 cursor = conn.cursor()
 conn.autocommit = True
 
+num_executions = 5
 
 # consulta1.sql en una variable
 
@@ -33,16 +35,15 @@ def execute_query(query, schema):
     return end_time - start_time
 
 
-def registros(query, schema, index):
-    if index == 1:
+def registros(query, schema, index) -> List[float]:
+    if index:
         cursor.execute(create_indexes(schema))
     else:
         cursor.execute(drop_indexes(schema))
-    num_executions = 5
 
-    execution_times = []
+    execution_times: List[float] = []
     for i in range(num_executions):
-        FunVacuum(schema)
+        cursor.execute(FunVacuum(schema))
         execution_time = execute_query(query, schema)
         execution_times.append(execution_time)
         print(
@@ -54,5 +55,20 @@ def registros(query, schema, index):
     print(f"\nTiempo promedio de ejecución: {average_time} segundos")
     print(f"Desviación estándar: {std_deviation} segundos")
 
+    execution_times = [round(num, 3) for num in execution_times]
+    execution_times.append(round(average_time, 4))
+    execution_times.append(round(average_time, 6))
 
-registros(consulta1, "mil")
+    return execution_times
+
+
+if __name__ == "__main__":
+    # Sin índices
+    arr = []
+    for i in range(4):
+        arr.append(registros(consulta1, "mil", False))
+
+    try:
+        create_latex_table("Consulta 1", arr, num_executions, False)
+    except Exception as e:
+        print("No hay compilador, pero se pudo crear la tabla :)")

@@ -1,3 +1,40 @@
+from typing import List
+from pylatex import Tabular, MultiColumn, Table, Center
+
+
+# times es el arreglo de tiempos por cada esquema -> [tiempos_del_esquema1k, tiempos_del_esquema10k, tiempos_del_esquema100k, tiempos_del_esquema1M]
+def create_latex_table(title: str, times: List[List[float]], iterations: int, has_indexes: bool):
+
+    table = Table()
+    center = Center()
+
+    # Generate data table
+    table1 = Tabular('|l|l|l|l|l|', width=5, col_space="1in")
+    table1.add_hline()
+    table1.add_row((MultiColumn(5, align='|c|', data=title),))
+    table1.add_hline()
+    table1.add_row(("Ejecución", "1K", "10k", "100k", "1M"))
+    table1.add_hline()
+
+    print(len(times[0]))
+    for i in range(iterations):
+        table1.add_row((i+1, times[0][i], times[1][i], times[2][i], times[3][i]))
+        table1.add_hline()
+
+    # Promedio
+    table1.add_row(("Promedio", times[0][iterations], times[1][iterations], times[2][iterations], times[3][iterations]))
+    table1.add_hline()
+    # Desviación Estándar
+    table1.add_row(("Desviación Estándar", times[0][iterations+1], times[1][iterations+1], times[2][iterations+1], times[3][iterations+1]))
+    table1.add_hline()
+
+    center.append(table1)
+    table.append(center)
+    table.add_caption(title + " con índices" if has_indexes else title + " sin índices")
+
+    table.generate_tex("TablasConIndices/"+title if has_indexes else "TablasSinIndices/"+title)
+
+
 def create_tables(squema):
     return f"""
 -- Tabla Personas
