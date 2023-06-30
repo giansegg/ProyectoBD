@@ -9,10 +9,10 @@ import os
 load_dotenv()
 # Crear instancia de Faker
 conn = psycopg2.connect(
-    host=os.getenv("HOST"),
-    database=os.getenv("DATABASE"),
-    user=os.getenv("USER"),
-    password=os.getenv("PASSWORD")
+    host="localhost",
+    database="proyecto",
+    user="postgres",
+    password="Goleador0107"
 )
 cursor = conn.cursor()
 conn.autocommit = True
@@ -69,6 +69,7 @@ def registros(query, schema, index) -> List[float]:
 
 
 def gen_latex_table(title, query, has_indexes):
+    print(f"\n\n{title}\n")
     arr = []
     schemas = ["mil", "diezmil", "cienmil", "millon"]
     for i in range(4):
@@ -79,13 +80,14 @@ def gen_latex_table(title, query, has_indexes):
     except Exception as e:
         print("No hay compilador, pero se pudo crear la tabla :)")
 
+
 if __name__ == "__main__":
     # Sin índices
-    gen_latex_table("Consulta 1", consulta1, False)
+    # gen_latex_table("Consulta 1", consulta1, False)
 
-    gen_latex_table("Consulta 2", consulta2, False)
+    # gen_latex_table("Consulta 2", consulta2, False)
 
-    gen_latex_table("Consulta 3", consulta3, False)
+    # gen_latex_table("Consulta 3", consulta3, False)
 
     # Con índices
     gen_latex_table("Consulta 1", consulta1, True)
@@ -93,4 +95,3 @@ if __name__ == "__main__":
     gen_latex_table("Consulta 2", consulta2, True)
 
     gen_latex_table("Consulta 3", consulta3, True)
-

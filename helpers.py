@@ -18,21 +18,26 @@ def create_latex_table(title: str, times: List[List[float]], iterations: int, ha
 
     print(len(times[0]))
     for i in range(iterations):
-        table1.add_row((i+1, times[0][i], times[1][i], times[2][i], times[3][i]))
+        table1.add_row((i+1, times[0][i], times[1]
+                       [i], times[2][i], times[3][i]))
         table1.add_hline()
 
     # Promedio
-    table1.add_row(("Promedio", times[0][iterations], times[1][iterations], times[2][iterations], times[3][iterations]))
+    table1.add_row(("Promedio", times[0][iterations], times[1]
+                   [iterations], times[2][iterations], times[3][iterations]))
     table1.add_hline()
     # Desviación Estándar
-    table1.add_row(("Desviación Estándar", times[0][iterations+1], times[1][iterations+1], times[2][iterations+1], times[3][iterations+1]))
+    table1.add_row(("Desviación Estándar", times[0][iterations+1], times[1]
+                   [iterations+1], times[2][iterations+1], times[3][iterations+1]))
     table1.add_hline()
 
     center.append(table1)
     table.append(center)
-    table.add_caption(title + " con índices" if has_indexes else title + " sin índices")
+    table.add_caption(
+        title + " con índices" if has_indexes else title + " sin índices")
 
-    table.generate_tex("TablasConIndices/"+title if has_indexes else "TablasSinIndices/"+title)
+    table.generate_tex("TablasConIndices/" +
+                       title if has_indexes else "TablasSinIndices/"+title)
 
 
 def create_tables(squema):
@@ -255,25 +260,24 @@ def create_indexes(squema):
     return f"""
     -- Indices de la base de datos
     -- Índices para la tabla Empleado
-CREATE INDEX idx_empleado_sueldo ON {squema}.Empleado USING btree (sueldo);
-CREATE INDEX idx_empleado_fecha_inicio ON {squema}.Empleado USING hash (fecha_inicio);
+CREATE INDEX IF NOT EXISTS idx_empleado_sueldo ON {squema}.Empleado USING btree (sueldo);
+CREATE INDEX IF NOT EXISTS idx_empleado_fecha_inicio ON {squema}.Empleado USING btree (fecha_inicio);
 
 -- Índices para la tabla Abogado
-CREATE INDEX idx_abogado_casos_ganados ON {squema}.Abogado USING btree (casos_ganados);
-CREATE INDEX idx_abogado_tipo_doc_numero_doc ON {squema}.Abogado USING hash (tipo_documento, numero_documento);
-
+CREATE INDEX IF NOT EXISTS idx_abogado_casos_ganados ON {squema}.Abogado USING btree (casos_ganados);
+CREATE INDEX IF NOT EXISTS idx_abogado_casos_ganados ON {squema}.Abogado USING btree (casos_perdidos);
 
 
 
 -- Índices para la tabla Persona
-CREATE INDEX idx_persona_sexo ON {squema}.Persona USING hash (sexo);
+CREATE INDEX IF NOT EXISTS idx_persona_sexo ON {squema}.Persona USING hash (sexo);
 
 -- Índices para la tabla Departamento
-CREATE INDEX idx_departamento_nombre ON {squema}.Departamento USING hash (nombre);
-CREATE INDEX idx_departamento_fecha_creacion ON {squema}.Departamento USING btree (fecha_creacion);
+CREATE INDEX IF NOT EXISTS idx_departamento_nombre ON {squema}.Departamento USING hash (nombre);
+CREATE INDEX IF NOT EXISTS idx_departamento_fecha_creacion ON {squema}.Departamento USING btree (fecha_creacion);
 
 -- Índices para la tabla PersonaJuridica
-CREATE INDEX idx_personajuridica_ruc ON {squema}.PersonaJuridica USING hash (ruc);
+CREATE INDEX IF NOT EXISTS idx_personajuridica_ruc ON {squema}.PersonaJuridica USING hash (ruc);
 """
 
 
@@ -287,7 +291,8 @@ DROP INDEX IF EXISTS {squema}.idx_empleado_fecha_inicio;
 
 -- Tabla Abogado
 DROP INDEX IF EXISTS {squema}.idx_abogado_casos_ganados;
-DROP INDEX IF EXISTS {squema}.idx_abogado_tipo_doc_numero_doc;
+DROP INDEX IF EXISTS {squema}.idx_abogado_casos_perdidos;
+
 
 -- Tabla Persona
 DROP INDEX IF EXISTS {squema}.idx_persona_sexo;

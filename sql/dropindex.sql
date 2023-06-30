@@ -4,10 +4,11 @@ DROP INDEX IF EXISTS idx_empleado_fecha_inicio;
 
 -- Tabla Abogado
 DROP INDEX IF EXISTS idx_abogado_casos_ganados;
-DROP INDEX IF EXISTS idx_abogado_tipo_doc_numero_doc;
-DROP INDEX IF EXISTS idx_abogado_fecha_inicio;
 
 
+
+-- Tabla Caso
+DROP INDEX IF EXISTS idx_caso_estado;
 
 
 -- Tabla Persona
