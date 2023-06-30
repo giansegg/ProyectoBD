@@ -9,7 +9,7 @@ def create_latex_table(title: str, times: List[List[float]], iterations: int, ha
     center = Center()
 
     # Generate data table
-    table1 = Tabular('|l|l|l|l|l|', width=5, col_space="1in")
+    table1 = Tabular('|l|l|l|l|l|', width=5, col_space="0.3in")
     table1.add_hline()
     table1.add_row((MultiColumn(5, align='|c|', data=title),))
     table1.add_hline()

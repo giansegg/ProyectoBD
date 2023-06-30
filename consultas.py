@@ -24,6 +24,12 @@ num_executions = 5
 with open('sql/Consulta1.sql', 'r') as file:
     consulta1 = file.read()
 
+with open('sql/Consulta2.sql', 'r') as file:
+    consulta2 = file.read()
+
+with open('sql/Consulta3.sql', 'r') as file:
+    consulta3 = file.read()
+
 
 # ejecutamos la consulta
 
@@ -62,13 +68,29 @@ def registros(query, schema, index) -> List[float]:
     return execution_times
 
 
-if __name__ == "__main__":
-    # Sin índices
+def gen_latex_table(title, query, has_indexes):
     arr = []
+    schemas = ["mil", "diezmil", "cienmil", "millon"]
     for i in range(4):
-        arr.append(registros(consulta1, "mil", False))
+        arr.append(registros(query, schemas[i], has_indexes))
 
     try:
-        create_latex_table("Consulta 1", arr, num_executions, False)
+        create_latex_table(title, arr, num_executions, has_indexes)
     except Exception as e:
         print("No hay compilador, pero se pudo crear la tabla :)")
+
+if __name__ == "__main__":
+    # Sin índices
+    gen_latex_table("Consulta 1", consulta1, False)
+
+    gen_latex_table("Consulta 2", consulta2, False)
+
+    gen_latex_table("Consulta 3", consulta3, False)
+
+    # Con índices
+    gen_latex_table("Consulta 1", consulta1, True)
+
+    gen_latex_table("Consulta 2", consulta2, True)
+
+    gen_latex_table("Consulta 3", consulta3, True)
+
