@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS {squema}.Documento (
 );
 """
 
+
 def drop_tables(squema):
     return f"""
     -- Tabla Documentos
@@ -193,4 +194,72 @@ DROP TABLE IF EXISTS {squema}.Telefono;
 
 -- Tabla Persona
 DROP TABLE IF EXISTS {squema}.Persona;
+"""
+
+
+def FunVacuum(squema):
+    return f"""
+    -- Funcion para limpiar la base de datos
+CREATE OR REPLACE FUNCTION {squema}.vacuum() RETURNS void AS $$
+DECLARE
+    tablas RECORD;
+BEGIN
+    FOR tablas IN
+        SELECT tablename FROM pg_tables WHERE schemaname = '{squema}'
+    LOOP
+        EXECUTE 'VACUUM ' || quote_ident(tablas.tablename) || ';';
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+"""
+
+
+def create_indexes(squema):
+    return f"""
+    -- Indices de la base de datos
+    -- Índices para la tabla Empleado
+CREATE INDEX idx_empleado_sueldo ON {squema}.Empleado USING btree (sueldo);
+CREATE INDEX idx_empleado_fecha_inicio ON {squema}.Empleado USING hash (fecha_inicio);
+
+-- Índices para la tabla Abogado
+CREATE INDEX idx_abogado_casos_ganados ON {squema}.Abogado USING btree (casos_ganados);
+CREATE INDEX idx_abogado_tipo_doc_numero_doc ON {squema}.Abogado USING hash (tipo_documento, numero_documento);
+
+
+
+
+-- Índices para la tabla Persona
+CREATE INDEX idx_persona_sexo ON {squema}.Persona USING hash (sexo);
+
+-- Índices para la tabla Departamento
+CREATE INDEX idx_departamento_nombre ON {squema}.Departamento USING hash (nombre);
+CREATE INDEX idx_departamento_fecha_creacion ON {squema}.Departamento USING btree (fecha_creacion);
+
+-- Índices para la tabla PersonaJuridica
+CREATE INDEX idx_personajuridica_ruc ON {squema}.PersonaJuridica USING hash (ruc);
+"""
+
+
+def drop_indexes(squema):
+    return f"""
+    -- Indices de la base de datos
+    -- Índices para la tabla Empleado
+    -- Tabla Empleado
+DROP INDEX IF EXISTS {squema}.idx_empleado_sueldo;
+DROP INDEX IF EXISTS {squema}.idx_empleado_fecha_inicio;
+
+-- Tabla Abogado
+DROP INDEX IF EXISTS {squema}.idx_abogado_casos_ganados;
+DROP INDEX IF EXISTS {squema}.idx_abogado_tipo_doc_numero_doc;
+
+-- Tabla Persona
+DROP INDEX IF EXISTS {squema}.idx_persona_sexo;
+
+-- Tabla Departamento
+DROP INDEX IF EXISTS {squema}.idx_departamento_nombre;
+DROP INDEX IF EXISTS {squema}.idx_departamento_fecha_creacion;
+
+-- Tabla PersonaJuridica
+DROP INDEX IF EXISTS {squema}.idx_personajuridica_ruc;
+
 """
