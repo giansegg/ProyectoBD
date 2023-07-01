@@ -267,8 +267,6 @@ CREATE INDEX IF NOT EXISTS idx_empleado_fecha_inicio ON {squema}.Empleado USING 
 CREATE INDEX IF NOT EXISTS idx_abogado_casos_ganados ON {squema}.Abogado USING btree (casos_ganados);
 CREATE INDEX IF NOT EXISTS idx_abogado_casos_ganados ON {squema}.Abogado USING btree (casos_perdidos);
 
-
-
 -- Índices para la tabla Persona
 CREATE INDEX IF NOT EXISTS idx_persona_sexo ON {squema}.Persona USING hash (sexo);
 
